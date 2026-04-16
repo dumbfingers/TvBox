@@ -12,8 +12,8 @@ import com.github.tvbox.osc.ui.compose.screens.HomeScreen
 import com.github.tvbox.osc.ui.compose.theme.TVBoxTheme
 import com.github.tvbox.osc.viewmodel.SourceViewModel
 import android.content.Intent
-import com.github.tvbox.osc.ui.activity.SearchActivity
-import com.github.tvbox.osc.ui.activity.SettingActivity
+import com.github.tvbox.osc.ui.compose.activities.SearchComposeActivity
+import com.github.tvbox.osc.ui.compose.activities.SettingsComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.DetailComposeActivity
 
 class HomeComposeActivity : ComponentActivity() {
@@ -51,10 +51,10 @@ class HomeComposeActivity : ComponentActivity() {
                         startActivity(intent)
                     },
                     onSearchClick = {
-                        startActivity(Intent(this, SearchActivity::class.java))
+                        startActivity(Intent(this, SearchComposeActivity::class.java))
                     },
                     onSettingsClick = {
-                        startActivity(Intent(this, SettingActivity::class.java))
+                        startActivity(Intent(this, SettingsComposeActivity::class.java))
                     }
                 )
             }

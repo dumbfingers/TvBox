@@ -98,6 +98,11 @@
             android:name=".ui.activity.DriveActivity"
             android:screenOrientation="sensorLandscape" />
         <activity
+            android:name=".ui.compose.activities.SearchComposeActivity"
+            android:windowSoftInputMode="stateVisible"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorLandscape" />
+        <activity
             android:name=".ui.activity.SearchActivity"
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="sensorLandscape" />
@@ -108,6 +113,10 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
         <activity
             android:name=".ui.activity.AppsActivity"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".ui.compose.activities.SettingsComposeActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ui.activity.SettingActivity"
