@@ -8,6 +8,7 @@ def static buildTime() {
 }
 
 android {
+    namespace 'com.github.tvbox.osc'
     compileSdk 34
 
     defaultConfig {
@@ -82,8 +83,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
     }
 
     lintOptions {
@@ -93,10 +98,25 @@ android {
 
     buildFeatures {
         dataBinding = true
+        compose = true
+        buildConfig = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
 
     lint {
         disable 'UnsafeOptInUsageError'
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            freeCompilerArgs += [
+                "-opt-in=androidx.tv.material3.ExperimentalTvMaterial3Api",
+                "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi"
+            ]
+        }
     }
 }
 
@@ -178,6 +198,22 @@ dependencies {
     implementation 'com.yanzhenjie.andserver:api:2.1.12'
     kapt 'com.yanzhenjie.andserver:processor:2.1.12'
     implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+
+    def composeBom = platform('androidx.compose:compose-bom:2024.01.00')
+    implementation composeBom
+    androidTestImplementation composeBom
+
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
+    implementation 'androidx.compose.runtime:runtime-livedata'
+
+    // TV Compose
+    implementation 'androidx.tv:tv-foundation:1.0.0-alpha10'
+    implementation 'androidx.tv:tv-material:1.0.0-alpha10'
+
     implementation('org.simpleframework:simple-xml:2.7.1') {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'xpp3', module: 'xpp3'
