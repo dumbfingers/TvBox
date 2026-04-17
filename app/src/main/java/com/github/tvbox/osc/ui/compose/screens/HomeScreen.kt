@@ -30,6 +30,8 @@ fun HomeScreen(
     onCategorySelected: (MovieSort.SortData) -> Unit,
     onMovieClick: (Movie.Video) -> Unit,
     onSearchClick: () -> Unit,
+    onHistoryClick: (() -> Unit)? = null,
+    onCollectClick: (() -> Unit)? = null,
     onSettingsClick: () -> Unit
 ) {
     var selectedCategoryIndex by remember { mutableStateOf(0) }
@@ -50,6 +52,18 @@ fun HomeScreen(
             Row {
                 Button(onClick = onSearchClick) {
                     Text("Search")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                onHistoryClick?.let {
+                    Button(onClick = it) {
+                        Text("History")
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                onCollectClick?.let {
+                    Button(onClick = it) {
+                        Text("Favorites")
+                    }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(onClick = onSettingsClick) {

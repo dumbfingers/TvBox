@@ -15,6 +15,8 @@ import android.content.Intent
 import com.github.tvbox.osc.ui.compose.activities.SearchComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.SettingsComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.DetailComposeActivity
+import com.github.tvbox.osc.ui.compose.activities.HistoryComposeActivity
+import com.github.tvbox.osc.ui.compose.activities.CollectComposeActivity
 
 class HomeComposeActivity : ComponentActivity() {
     private lateinit var sourceViewModel: SourceViewModel
@@ -52,6 +54,12 @@ class HomeComposeActivity : ComponentActivity() {
                     },
                     onSearchClick = {
                         startActivity(Intent(this, SearchComposeActivity::class.java))
+                    },
+                    onHistoryClick = {
+                        startActivity(Intent(this, HistoryComposeActivity::class.java))
+                    },
+                    onCollectClick = {
+                        startActivity(Intent(this, CollectComposeActivity::class.java))
                     },
                     onSettingsClick = {
                         startActivity(Intent(this, SettingsComposeActivity::class.java))
