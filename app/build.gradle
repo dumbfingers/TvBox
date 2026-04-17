@@ -214,6 +214,8 @@ dependencies {
     implementation 'androidx.tv:tv-foundation:1.0.0-alpha10'
     implementation 'androidx.tv:tv-material:1.0.0-alpha10'
 
+    implementation "com.github.bumptech.glide:compose:1.0.0-beta01"
+
     implementation('org.simpleframework:simple-xml:2.7.1') {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'xpp3', module: 'xpp3'

@@ -68,11 +68,22 @@
             android:supportsPictureInPicture="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
         <activity
+            android:name=".ui.compose.activities.DetailComposeActivity"
+            android:screenOrientation="sensorLandscape"
+            android:supportsPictureInPicture="true"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
+        <activity
             android:name=".ui.activity.DetailActivity"
             android:screenOrientation="sensorLandscape"
             android:supportsPictureInPicture="true"
             android:launchMode="singleTask"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
+        <activity
+            android:name=".ui.compose.activities.HistoryComposeActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ui.activity.HistoryActivity"
             android:screenOrientation="sensorLandscape" />
@@ -82,6 +93,10 @@
             android:supportsPictureInPicture="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
         <activity
+            android:name=".ui.compose.activities.CollectComposeActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorLandscape" />
+        <activity
             android:name=".ui.activity.CollectActivity"
             android:screenOrientation="sensorLandscape" />
         <activity
@@ -89,6 +104,11 @@
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ui.activity.DriveActivity"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".ui.compose.activities.SearchComposeActivity"
+            android:windowSoftInputMode="stateVisible"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ui.activity.SearchActivity"
@@ -101,6 +121,10 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
         <activity
             android:name=".ui.activity.AppsActivity"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".ui.compose.activities.SettingsComposeActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ui.activity.SettingActivity"
