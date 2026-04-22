@@ -17,6 +17,7 @@ import com.github.tvbox.osc.ui.compose.activities.SettingsComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.DetailComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.HistoryComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.CollectComposeActivity
+import com.github.tvbox.osc.ui.compose.activities.AppsComposeActivity
 
 class HomeComposeActivity : ComponentActivity() {
     private lateinit var sourceViewModel: SourceViewModel
@@ -63,6 +64,9 @@ class HomeComposeActivity : ComponentActivity() {
                     },
                     onSettingsClick = {
                         startActivity(Intent(this, SettingsComposeActivity::class.java))
+                    },
+                    onAppsClick = {
+                        startActivity(Intent(this, AppsComposeActivity::class.java))
                     }
                 )
             }

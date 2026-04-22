@@ -32,6 +32,7 @@ fun HomeScreen(
     onSearchClick: () -> Unit,
     onHistoryClick: (() -> Unit)? = null,
     onCollectClick: (() -> Unit)? = null,
+    onAppsClick: (() -> Unit)? = null,
     onSettingsClick: () -> Unit
 ) {
     var selectedCategoryIndex by remember { mutableStateOf(0) }
@@ -66,6 +67,12 @@ fun HomeScreen(
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
+                onAppsClick?.let {
+                    Button(onClick = it) {
+                        Text("Apps")
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
                 Button(onClick = onSettingsClick) {
                     Text("Settings")
                 }
@@ -86,7 +93,7 @@ fun HomeScreen(
                         onCategorySelected(category)
                     }
                 ) {
-                    Text(category.name)
+                    Text(category.name ?: "")
                 }
             }
         }
@@ -126,7 +133,7 @@ fun MovieCard(movie: Movie.Video, onClick: () -> Unit) {
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             GlideImage(
-                model = movie.pic,
+                model = movie.pic ?: "",
                 contentDescription = movie.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -140,7 +147,7 @@ fun MovieCard(movie: Movie.Video, onClick: () -> Unit) {
                     .padding(4.dp)
             ) {
                 Text(
-                    text = movie.name,
+                    text = movie.name ?: "",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.White,
                     modifier = Modifier.padding(4.dp),
