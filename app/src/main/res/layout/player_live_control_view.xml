@@ -296,6 +296,7 @@
                         android:layout_marginRight="@dimen/vs_10"
                         android:indeterminateBehavior="repeat"
                         android:indeterminateDrawable="@drawable/dkplayer_progress_loading"
+                        android:id="@+id/loading"
                         android:indeterminateOnly="true"
                         android:tag="vod_control_loading" />
                 </LinearLayout>

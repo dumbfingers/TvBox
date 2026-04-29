@@ -14,7 +14,7 @@ import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.server.ControlManager;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
+import com.github.tvbox.osc.ui.compose.activities.HomeComposeActivity;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.hjq.permissions.Permission;
@@ -60,7 +60,7 @@ public class DefaultConfig {
             }
         }
         if (withMy)
-            data.add(0, new MovieSort.SortData("my0", HomeActivity.getRes().getString(R.string.app_home)));
+            data.add(0, new MovieSort.SortData("my0", App.getInstance().getResources().getString(R.string.app_home)));
         Collections.sort(data);
         return data;
     }
@@ -85,7 +85,7 @@ public class DefaultConfig {
     }
 
     public static void restartApp() {
-        Activity activity = AppManager.getInstance().getActivity(HomeActivity.class);
+        Activity activity = AppManager.getInstance().getActivity(HomeComposeActivity.class);
         final Intent intent = activity.getPackageManager().getLaunchIntentForPackage(activity.getPackageName());
         if (intent != null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

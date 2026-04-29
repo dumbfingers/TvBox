@@ -20,7 +20,7 @@ import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.player.MyVideoView;
-import com.github.tvbox.osc.ui.activity.DetailActivity;
+import com.github.tvbox.osc.ui.activity.PlayActivity;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -79,9 +79,9 @@ public class PlayService extends Service {
         remoteViews.setImageViewResource(R.id.iv_play_pause,videoView.isPlaying()?R.drawable.ic_notify_pause:R.drawable.ic_notify_play);
 
         // 创建通知栏操作
-        remoteViews.setOnClickPendingIntent(R.id.iv_previous, getPendingIntent(DetailActivity.BROADCAST_ACTION_PREV));
-        remoteViews.setOnClickPendingIntent(R.id.iv_play_pause, getPendingIntent(DetailActivity.BROADCAST_ACTION_PLAYPAUSE));
-        remoteViews.setOnClickPendingIntent(R.id.iv_next, getPendingIntent(DetailActivity.BROADCAST_ACTION_NEXT));
+        remoteViews.setOnClickPendingIntent(R.id.iv_previous, getPendingIntent(PlayActivity.BROADCAST_ACTION_PREV));
+        remoteViews.setOnClickPendingIntent(R.id.iv_play_pause, getPendingIntent(PlayActivity.BROADCAST_ACTION_PLAYPAUSE));
+        remoteViews.setOnClickPendingIntent(R.id.iv_next, getPendingIntent(PlayActivity.BROADCAST_ACTION_NEXT));
         
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.app_icon)
@@ -100,11 +100,11 @@ public class PlayService extends Service {
     }
 
     private PendingIntent getPendingIntentActivity() {
-        Intent intent = new Intent(this, DetailActivity.class);
+        Intent intent = new Intent(this, PlayActivity.class);
         return PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
     public static PendingIntent getPendingIntent(int actionCode) {
-        return PendingIntent.getBroadcast(App.getInstance(), actionCode, new Intent(DetailActivity.BROADCAST_ACTION).putExtra("action", actionCode).setPackage(App.getInstance().getPackageName()),PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(App.getInstance(), actionCode, new Intent(PlayActivity.BROADCAST_ACTION).putExtra("action", actionCode).setPackage(App.getInstance().getPackageName()),PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @Override

@@ -4,14 +4,15 @@ plugins {
 }
 
 android {
+    namespace 'com.undcover.freedom.pyramid'
     compileSdk 34
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 34
 
         python {
-            buildPython("D:/Programs/Python/Python38/python.exe")
+            // buildPython("/home/jules/.pyenv/shims/python3")
             pip {
                 install "lxml"
                 install "ujson"

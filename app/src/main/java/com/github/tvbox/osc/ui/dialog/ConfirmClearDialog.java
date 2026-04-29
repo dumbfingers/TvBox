@@ -10,8 +10,8 @@ import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.cache.RoomDataManger;
 import com.github.tvbox.osc.cache.VodCollect;
-import com.github.tvbox.osc.ui.activity.CollectActivity;
-import com.github.tvbox.osc.ui.activity.HistoryActivity;
+import com.github.tvbox.osc.ui.compose.activities.CollectComposeActivity;
+import com.github.tvbox.osc.ui.compose.activities.HistoryComposeActivity;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -35,14 +35,14 @@ public class ConfirmClearDialog extends BaseDialog {
                 // if removing all Favorites
                 if (type == "Collect") {
                     List<VodCollect> vodInfoList = new ArrayList<>();
-                    CollectActivity.collectAdapter.setNewData(vodInfoList);
-                    CollectActivity.collectAdapter.notifyDataSetChanged();
+                    // CollectComposeActivity.collectAdapter.setNewData(vodInfoList);
+                    // CollectComposeActivity.collectAdapter.notifyDataSetChanged();
                     RoomDataManger.deleteVodCollectAll();
                     // if removing all History
                 } else if (type == "History") {
                     List<VodInfo> vodInfoList = new ArrayList<>();
-                    HistoryActivity.historyAdapter.setNewData(vodInfoList);
-                    HistoryActivity.historyAdapter.notifyDataSetChanged();
+                    // HistoryComposeActivity.historyAdapter.setNewData(vodInfoList);
+                    // HistoryComposeActivity.historyAdapter.notifyDataSetChanged();
                     RoomDataManger.deleteVodRecordAll();
                 }
 

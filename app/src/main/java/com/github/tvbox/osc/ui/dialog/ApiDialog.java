@@ -2,6 +2,7 @@ package com.github.tvbox.osc.ui.dialog;
 
 import android.app.Activity;
 import android.content.Context;
+import com.github.tvbox.osc.base.App;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -13,7 +14,7 @@ import androidx.annotation.NonNull;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.server.ControlManager;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
+import com.github.tvbox.osc.ui.compose.activities.HomeComposeActivity;
 import com.github.tvbox.osc.ui.adapter.ApiHistoryDialogAdapter;
 import com.github.tvbox.osc.ui.tv.QRCodeGen;
 import com.github.tvbox.osc.util.DefaultConfig;
@@ -136,7 +137,7 @@ public class ApiDialog extends BaseDialog {
                 if (history.contains(current))
                     idx = history.indexOf(current);
                 ApiHistoryDialog dialog = new ApiHistoryDialog(getContext());
-                dialog.setTip(HomeActivity.getRes().getString(R.string.dia_history_list));
+                dialog.setTip(App.getInstance().getResources().getString(R.string.dia_history_list));
                 dialog.setAdapter(new ApiHistoryDialogAdapter.SelectDialogInterface() {
                     @Override
                     public void click(String value) {
@@ -164,7 +165,7 @@ public class ApiDialog extends BaseDialog {
                 if (liveHistory.contains(current))
                     idx = liveHistory.indexOf(current);
                 ApiHistoryDialog dialog = new ApiHistoryDialog(getContext());
-                dialog.setTip(HomeActivity.getRes().getString(R.string.dia_history_live));
+                dialog.setTip(App.getInstance().getResources().getString(R.string.dia_history_live));
                 dialog.setAdapter(new ApiHistoryDialogAdapter.SelectDialogInterface() {
                     @Override
                     public void click(String liveURL) {
@@ -192,7 +193,7 @@ public class ApiDialog extends BaseDialog {
                 if (EPGHistory.contains(current))
                     idx = EPGHistory.indexOf(current);
                 ApiHistoryDialog dialog = new ApiHistoryDialog(getContext());
-                dialog.setTip(HomeActivity.getRes().getString(R.string.dia_history_epg));
+                dialog.setTip(App.getInstance().getResources().getString(R.string.dia_history_epg));
                 dialog.setAdapter(new ApiHistoryDialogAdapter.SelectDialogInterface() {
                     @Override
                     public void click(String epgURL) {

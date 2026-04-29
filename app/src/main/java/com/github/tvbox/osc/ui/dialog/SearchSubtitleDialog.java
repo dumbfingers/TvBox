@@ -2,6 +2,7 @@ package com.github.tvbox.osc.ui.dialog;
 
 import android.app.Activity;
 import android.content.Context;
+import com.github.tvbox.osc.base.App;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,7 +21,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.bean.SubtitleBean;
 import com.github.tvbox.osc.bean.SubtitleData;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
+import com.github.tvbox.osc.ui.compose.activities.HomeComposeActivity;
 import com.github.tvbox.osc.ui.adapter.SearchSubtitleAdapter;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.viewmodel.SubtitleViewModel;
@@ -67,7 +68,7 @@ public class SearchSubtitleDialog extends BaseDialog {
         mGridView = findViewById(R.id.mGridView);
         subtitleSearchEt = findViewById(R.id.input_sub);
         subtitleSearchBtn = findViewById(R.id.inputSubmit);
-        subtitleSearchBtn.setText(HomeActivity.getRes().getString(R.string.vod_sub_search));
+        subtitleSearchBtn.setText(App.getInstance().getResources().getString(R.string.vod_sub_search));
 
         searchAdapter = new SearchSubtitleAdapter();
         mGridView.setHasFixedSize(true);
