@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.github.tvbox.osc.event.ServerEvent;
-import com.github.tvbox.osc.ui.activity.PlayActivity;
+import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.util.AppManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -21,10 +21,10 @@ public class DetailReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (action.equals(intent.getAction()) && intent.getExtras() != null) {
-            if (AppManager.getInstance().getActivity(PlayActivity.class) != null) {
-                AppManager.getInstance().finishActivity(PlayActivity.class);
+            if (AppManager.getInstance().getActivity(DetailActivity.class) != null) {
+                AppManager.getInstance().finishActivity(DetailActivity.class);
             }
-            Intent newIntent = new Intent(context, PlayActivity.class);
+            Intent newIntent = new Intent(context, DetailActivity.class);
             newIntent.putExtra("id", intent.getExtras().getString("id"));
             newIntent.putExtra("sourceKey", intent.getExtras().getString("sourceKey"));
             newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

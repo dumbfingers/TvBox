@@ -2,7 +2,6 @@ package com.github.tvbox.osc.ui.tv.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import com.github.tvbox.osc.base.App;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -18,7 +17,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.chad.library.adapter.base.entity.MultiItemEntity;
 import com.github.tvbox.osc.R;
-import com.github.tvbox.osc.ui.compose.activities.HomeComposeActivity;
+import com.github.tvbox.osc.ui.activity.HomeActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +31,7 @@ import java.util.List;
  */
 public class SearchKeyboard extends FrameLayout {
     private RecyclerView mRecyclerView;
-    private List<String> keys = Arrays.asList(App.getInstance().getResources().getString(R.string.act_search_rem), App.getInstance().getResources().getString(R.string.act_search_del), "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+    private List<String> keys = Arrays.asList(HomeActivity.getRes().getString(R.string.act_search_rem), HomeActivity.getRes().getString(R.string.act_search_del), "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
     private List<Keyboard> keyboardList = new ArrayList<>();
     private OnSearchKeyListener searchKeyListener;
     private OnFocusChangeListener focusChangeListener = new OnFocusChangeListener() {

@@ -2,7 +2,6 @@ package com.github.tvbox.osc.base;
 
 import android.os.Environment;
 import android.os.Handler;
-import com.github.tvbox.osc.base.App;
 import android.os.Looper;
 
 import androidx.core.os.HandlerCompat;

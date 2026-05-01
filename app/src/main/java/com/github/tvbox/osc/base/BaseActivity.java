@@ -21,7 +21,7 @@ import com.blankj.utilcode.util.ActivityUtils;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.callback.EmptyCallback;
 import com.github.tvbox.osc.callback.LoadingCallback;
-import com.github.tvbox.osc.ui.activity.PlayActivity;
+import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.util.AppManager;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LocaleHelper;
@@ -98,7 +98,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         }
 
         super.onCreate(savedInstanceState);
-        if (getLayoutResID() != 0) setContentView(getLayoutResID());
+        setContentView(getLayoutResID());
         mContext = this;
         CutoutUtil.adaptCutoutAboveAndroidP(mContext, true);//设置刘海
         AppManager.getInstance().addActivity(this);
@@ -252,9 +252,9 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     }
 
     public void jumpActivity(Class<? extends BaseActivity> clazz, Bundle bundle) {
-	if (PlayActivity.class.isAssignableFrom(clazz) && Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0) == 2) {
+	if (DetailActivity.class.isAssignableFrom(clazz) && Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0) == 2) {
             //1.重新打开singleTask的页面(关闭小窗) 2.关闭画中画，重进detail再开启画中画会闪退
-            ActivityUtils.finishActivity(PlayActivity.class);
+            ActivityUtils.finishActivity(DetailActivity.class);
         }
         Intent intent = new Intent(mContext, clazz);
         intent.putExtras(bundle);

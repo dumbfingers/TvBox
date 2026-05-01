@@ -920,7 +920,11 @@ class PlayActivity : BaseActivity() {
                     }
                 }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION), RECEIVER_NOT_EXPORTED) else registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION), Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION))
+            }
         } else {
             if (onStopCalled) mVideoView.release()
             pipActionReceiver?.let { unregisterReceiver(it) }
@@ -948,8 +952,8 @@ class PlayActivity : BaseActivity() {
 
     fun playNext(inProgress: Boolean) {
         val series = mVodInfo?.seriesMap?.get(mVodInfo?.playFlag ?: "")
-        if (series == null || mVodInfo!!.playIndex + 1 >= series.size) {
-            Toast.makeText(this, if (mVodInfo!!.reverseSort) "已经是第一集了" else "已经是最后一集了", Toast.LENGTH_SHORT).show()
+        if (series == null || (mVodInfo?.playIndex ?: 0) + 1 >= series.size) {
+            Toast.makeText(this, if (mVodInfo?.reverseSort == true) "已经是第一集了" else "已经是最后一集了", Toast.LENGTH_SHORT).show()
             if (inProgress) finish()
             return
         }
@@ -963,8 +967,8 @@ class PlayActivity : BaseActivity() {
 
     fun playPrevious() {
         val series = mVodInfo?.seriesMap?.get(mVodInfo?.playFlag ?: "")
-        if (series == null || mVodInfo!!.playIndex - 1 < 0) {
-            Toast.makeText(this, if (mVodInfo!!.reverseSort) "已经是最后一集了" else "已经是第一集了", Toast.LENGTH_SHORT).show()
+        if (series == null || (mVodInfo?.playIndex ?: 0) - 1 < 0) {
+            Toast.makeText(this, if (mVodInfo?.reverseSort == true) "已经是最后一集了" else "已经是第一集了", Toast.LENGTH_SHORT).show()
             return
         }
         if (mVodInfo!!.playIndex == 0) {
@@ -995,10 +999,10 @@ class PlayActivity : BaseActivity() {
 
     fun switchPlayer() {
         try {
-            val playerType = if (mVodPlayerCfg?.optInt("pl", 1) == 1) 2 else 1
+            val playerType = if (mVodPlayerCfg?.optInt("pl") == 1) 2 else 1
             mVodPlayerCfg?.put("pl", playerType)
             mController.setPlayerConfig(mVodPlayerCfg)
-            mVodInfo?.playerCfg = mVodPlayerCfg.toString()
+            mVodInfo!!.playerCfg = mVodPlayerCfg.toString()
             EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodPlayerCfg))
         } catch (ignored: Exception) {}
     }

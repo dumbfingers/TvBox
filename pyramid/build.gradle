@@ -12,7 +12,7 @@ android {
         targetSdkVersion 34
 
         python {
-            // buildPython("/home/jules/.pyenv/shims/python3")
+            buildPython("D:/Programs/Python/Python38/python.exe")
             pip {
                 install "lxml"
                 install "ujson"
