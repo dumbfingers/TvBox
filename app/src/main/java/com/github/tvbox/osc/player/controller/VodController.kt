@@ -28,6 +28,7 @@ import com.github.tvbox.osc.player.thirdparty.ReexPlayer
 import com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView
 import com.github.tvbox.osc.ui.activity.PlayActivity
 import com.github.tvbox.osc.ui.compose.activities.HomeComposeActivity
+import com.github.tvbox.osc.ui.activity.DetailActivity
 import com.github.tvbox.osc.ui.adapter.ParseAdapter
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter
 import com.github.tvbox.osc.ui.dialog.SelectDialog
@@ -616,6 +617,11 @@ class VodController(context: Context) : BaseController(context) {
                 if (mActivity != null) {
                     if (mActivity?.javaClass?.simpleName == "PlayActivity") {
                         // (mActivity as? PlayActivity)?.toggleFullPreview()
+                    } else if (mActivity?.javaClass?.simpleName == "DetailActivity") {
+                        (mActivity as? DetailActivity)?.toggleFullPreview()
+                    } else {
+                        mActivity?.finish()
+                    }
                     } else {
                         mActivity?.finish()
                     }
