@@ -32,6 +32,9 @@ fun HomeScreen(
     onSearchClick: () -> Unit,
     onHistoryClick: (() -> Unit)? = null,
     onCollectClick: (() -> Unit)? = null,
+    onPushClick: (() -> Unit)? = null,
+    onLiveClick: (() -> Unit)? = null,
+    onDriveClick: (() -> Unit)? = null,
     onAppsClick: (() -> Unit)? = null,
     onSettingsClick: () -> Unit
 ) {
@@ -64,6 +67,24 @@ fun HomeScreen(
                 onCollectClick?.let {
                     Button(onClick = it) {
                         Text("Favorites")
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                onPushClick?.let {
+                    Button(onClick = it) {
+                        Text("Push")
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                onLiveClick?.let {
+                    Button(onClick = it) {
+                        Text("Live")
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                onDriveClick?.let {
+                    Button(onClick = it) {
+                        Text("Drive")
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
