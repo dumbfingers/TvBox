@@ -1,7 +1,6 @@
 package com.github.tvbox.osc.ui.activity
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.app.Activity
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
@@ -10,7 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.net.Uri
@@ -19,7 +17,6 @@ import android.os.*
 import android.text.TextUtils
 import android.util.Rational
 import android.view.KeyEvent
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
@@ -27,27 +24,26 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
+import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.Player
 import androidx.media3.common.text.Cue
 import androidx.recyclerview.widget.DiffUtil
-import com.github.catvod.crawler.Spider
 import com.github.tvbox.osc.R
 import com.github.tvbox.osc.api.ApiConfig
 import com.github.tvbox.osc.base.App
 import com.github.tvbox.osc.base.BaseActivity
 import com.github.tvbox.osc.bean.ParseBean
 import com.github.tvbox.osc.bean.SourceBean
-import com.github.tvbox.osc.bean.SubtitleBean
+import com.github.tvbox.osc.player.TrackInfoBean
 import com.github.tvbox.osc.bean.VodInfo
 import com.github.tvbox.osc.cache.CacheManager
 import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.player.*
 import com.github.tvbox.osc.player.controller.VodController
+import com.github.tvbox.osc.util.FileUtils
 import com.github.tvbox.osc.player.danmu.Parser
 import com.github.tvbox.osc.player.thirdparty.Kodi
 import com.github.tvbox.osc.player.thirdparty.MXPlayer
@@ -57,19 +53,14 @@ import com.github.tvbox.osc.server.RemoteServer
 import com.github.tvbox.osc.subtitle.model.Subtitle
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter
 import com.github.tvbox.osc.ui.dialog.*
-import com.github.tvbox.osc.util.FileUtils
-import com.github.tvbox.osc.util.XWalkUtils
 import com.github.tvbox.osc.util.*
 import com.github.tvbox.osc.util.parser.SuperParse
 import com.github.tvbox.osc.util.thunder.Jianpian
 import com.github.tvbox.osc.util.thunder.Thunder
 import com.github.tvbox.osc.viewmodel.SourceViewModel
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.callback.AbsCallback
-import com.lzy.okgo.callback.StringCallback
 import com.lzy.okgo.model.HttpHeaders
 import com.lzy.okgo.model.Response
 import com.obsez.android.lib.filechooser.ChooserDialog
@@ -85,19 +76,16 @@ import org.greenrobot.eventbus.ThreadMode
 import org.json.JSONException
 import org.json.JSONObject
 import org.xwalk.core.*
-import tv.danmaku.ijk.media.player.IMediaPlayer
-import tv.danmaku.ijk.media.player.IjkTimedText
-import xyz.doikki.videoplayer.player.AbstractPlayer
 import xyz.doikki.videoplayer.player.AndroidMediaPlayer
 import xyz.doikki.videoplayer.player.ProgressManager
-import xyz.doikki.videoplayer.player.VideoView
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.net.URLEncoder
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import com.github.tvbox.osc.ui.compose.screens.PlayScreen
+import com.github.tvbox.osc.ui.compose.theme.TVBoxTheme
 
 class PlayActivity : BaseActivity() {
     private lateinit var mVideoView: MyVideoView
@@ -123,7 +111,7 @@ class PlayActivity : BaseActivity() {
         const val BROADCAST_ACTION_NEXT = 2
     }
 
-    override fun getLayoutResID(): Int = R.layout.activity_play
+    override fun getLayoutResID(): Int = 0
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun refresh(event: RefreshEvent) {
@@ -137,46 +125,19 @@ class PlayActivity : BaseActivity() {
 
     override fun init() {
         EventBus.getDefault().register(this)
-        initView()
+        initComponents()
         initViewModel()
         initData()
         initDanmuView()
-    }
 
-    private fun initDanmuView() {
-        mDanmuView = findViewById(R.id.danmaku)
-        mDanmakuContext = DanmakuContext.create()
-        mVideoView.setDanmuView(mDanmuView)
-    }
-
-    private fun setDanmuViewSettings(reload: Boolean) {
-        val speed = HawkUtils.getDanmuSpeed()
-        val alpha = HawkUtils.getDanmuAlpha()
-        val sizeScale = HawkUtils.getDanmuSizeScale()
-        val maxLine = HawkUtils.getDanmuMaxLine()
-        val maxLines = HashMap<Int, Int>()
-        maxLines[BaseDanmaku.TYPE_FIX_TOP] = maxLine
-        maxLines[BaseDanmaku.TYPE_SCROLL_RL] = maxLine
-        maxLines[BaseDanmaku.TYPE_SCROLL_LR] = maxLine
-        maxLines[BaseDanmaku.TYPE_FIX_BOTTOM] = maxLine
-        mDanmakuContext.setMaximumLines(maxLines).setScrollSpeedFactor(speed).setDanmakuTransparency(alpha).setScaleTextSize(sizeScale)
-        mDanmakuContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3f).setDanmakuMargin(8)
-        if (reload) {
-            executorService?.shutdownNow()
-            executorService = Executors.newSingleThreadExecutor()
-            executorService?.execute {
-                mDanmuView.release()
-                mDanmuView.prepare(Parser(danmuText), mDanmakuContext)
-                App.post {
-                    if (mVideoView.isPlaying) {
-                        mDanmuView.seekTo(mVideoView.currentPosition)
-                    }
-                }
+        setContent {
+            TVBoxTheme {
+                PlayScreen(videoView = mVideoView, controller = mController)
             }
         }
     }
 
-    private fun initView() {
+    private fun initComponents() {
         hideSystemUI(false)
         mHandler = Handler(Looper.getMainLooper()) { msg ->
             when (msg.what) {
@@ -195,14 +156,17 @@ class PlayActivity : BaseActivity() {
             }
             false
         }
-        mVideoView = findViewById(R.id.mVideoView)
-        mPlayLoadTip = findViewById(R.id.play_load_tip)
-        mPlayLoading = findViewById(R.id.play_loading)
-        mPlayLoadErr = findViewById(R.id.play_load_error)
+
+        mVideoView = MyVideoView(this)
+        mPlayLoadTip = TextView(this)
+        mPlayLoading = ProgressBar(this)
+        mPlayLoadErr = ImageView(this)
+
         mController = VodController(this)
         mController.setCanChangePosition(true)
         mController.setEnableInNormal(true)
         mController.setGestureEnabled(true)
+
         val progressManager = object : ProgressManager() {
             override fun saveProgress(url: String, progress: Long) {
                 if (videoDuration == 0L) return
@@ -211,13 +175,10 @@ class PlayActivity : BaseActivity() {
 
             override fun getSavedProgress(url: String): Long {
                 var st = 0
-                val cfg = mVodPlayerCfg
-                if (cfg != null) {
-                    try {
-                        st = cfg.optInt("st", 0)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                try {
+                    st = mVodPlayerCfg?.optInt("st", 0) ?: 0
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
                 val skip = st * 1000L
                 val cache = CacheManager.getCache(MD5.string2MD5(url))
@@ -233,12 +194,11 @@ class PlayActivity : BaseActivity() {
             }
 
             override fun playNext(rmProgress: Boolean) {
-                val segUrlList = videoSegmentationURL
-                if (segUrlList.isNotEmpty()) {
-                    for (i in 0 until segUrlList.size - 1) {
-                        if (segUrlList[i] == videoURL) {
+                if (videoSegmentationURL.size > 0) {
+                    for (i in 0 until videoSegmentationURL.size - 1) {
+                        if (videoSegmentationURL[i] == videoURL) {
                             mVideoView.setPlayFromZeroPositionOnce(true)
-                            startPlayUrl(segUrlList[i + 1], HashMap())
+                            startPlayUrl(videoSegmentationURL[i + 1], HashMap())
                             return
                         }
                     }
@@ -249,12 +209,11 @@ class PlayActivity : BaseActivity() {
             }
 
             override fun playPre() {
-                val segUrlList = videoSegmentationURL
-                if (segUrlList.isNotEmpty()) {
-                    for (i in 1 until segUrlList.size) {
-                        if (segUrlList[i] == videoURL) {
+                if (videoSegmentationURL.size > 0) {
+                    for (i in 1 until videoSegmentationURL.size) {
+                        if (videoSegmentationURL[i] == videoURL) {
                             mVideoView.setPlayFromZeroPositionOnce(true)
-                            startPlayUrl(segUrlList[i - 1], HashMap())
+                            startPlayUrl(videoSegmentationURL[i - 1], HashMap())
                             return
                         }
                     }
@@ -263,19 +222,13 @@ class PlayActivity : BaseActivity() {
             }
 
             override fun changeParse(pb: ParseBean?) {
-                if (pb != null) {
-                    autoRetryCount = 0
-                    doParse(pb)
-                }
+                autoRetryCount = 0
+                pb?.let { doParse(it) }
             }
 
             override fun updatePlayerCfg() {
-                val info = mVodInfo
-                val cfg = mVodPlayerCfg
-                if (info != null && cfg != null) {
-                    info.playerCfg = cfg.toString()
-                    EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH, cfg))
-                }
+                mVodInfo?.playerCfg = mVodPlayerCfg.toString()
+                EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodPlayerCfg))
             }
 
             override fun replay(replay: Boolean) {
@@ -309,6 +262,39 @@ class PlayActivity : BaseActivity() {
         })
         mVideoView.setVideoController(mController)
         mVideoView.setmHandler(mHandler)
+    }
+
+    private fun initDanmuView() {
+        mDanmuView = DanmakuView(this)
+        mDanmakuContext = DanmakuContext.create()
+        mVideoView.setDanmuView(mDanmuView)
+    }
+
+    private fun setDanmuViewSettings(reload: Boolean) {
+        val speed = HawkUtils.getDanmuSpeed()
+        val alpha = HawkUtils.getDanmuAlpha()
+        val sizeScale = HawkUtils.getDanmuSizeScale()
+        val maxLine = HawkUtils.getDanmuMaxLine()
+        val maxLines = HashMap<Int, Int>()
+        maxLines[BaseDanmaku.TYPE_FIX_TOP] = maxLine
+        maxLines[BaseDanmaku.TYPE_SCROLL_RL] = maxLine
+        maxLines[BaseDanmaku.TYPE_SCROLL_LR] = maxLine
+        maxLines[BaseDanmaku.TYPE_FIX_BOTTOM] = maxLine
+        mDanmakuContext.setMaximumLines(maxLines).setScrollSpeedFactor(speed).setDanmakuTransparency(alpha).setScaleTextSize(sizeScale)
+        mDanmakuContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3f).setDanmakuMargin(8)
+        if (reload) {
+            executorService?.shutdownNow()
+            executorService = Executors.newSingleThreadExecutor()
+            executorService?.execute {
+                mDanmuView.release()
+                mDanmuView.prepare(Parser(danmuText), mDanmakuContext)
+                App.post {
+                    if (mVideoView.isPlaying) {
+                        mDanmuView.seekTo(mVideoView.currentPosition)
+                    }
+                }
+            }
+        }
     }
 
     fun setSubtitle(path: String?) {
@@ -349,13 +335,11 @@ class PlayActivity : BaseActivity() {
                         searchSubtitleDialog.dismiss()
                     }
                 }
-                val info = mVodInfo
-                if (info != null) {
-                    if (info.playFlag != null && (info.playFlag!!.contains("Ali") || info.playFlag!!.contains("parse"))) {
-                        searchSubtitleDialog.setSearchWord(info.playNote)
-                    } else {
-                        searchSubtitleDialog.setSearchWord(info.name ?: "")
-                    }
+                val playFlag = mVodInfo?.playFlag ?: ""
+                if (playFlag.contains("Ali") || playFlag.contains("parse")) {
+                    searchSubtitleDialog.setSearchWord(mVodInfo?.playNote ?: "")
+                } else {
+                    searchSubtitleDialog.setSearchWord(mVodInfo?.name ?: "")
                 }
                 searchSubtitleDialog.show()
             }
@@ -379,16 +363,15 @@ class PlayActivity : BaseActivity() {
     }
 
     fun selectMyInternalSubtitle() {
-        val mediaPlayer = mVideoView.mediaPlayer ?: return
+        val mediaPlayer = mVideoView.mediaPlayer
         var trackInfo: TrackInfo? = null
         if (mediaPlayer is EXOmPlayer) trackInfo = mediaPlayer.trackInfo
         if (mediaPlayer is IjkmPlayer) trackInfo = mediaPlayer.trackInfo
-        val finalTrackInfo = trackInfo
-        if (finalTrackInfo == null) {
+        if (trackInfo == null) {
             return
         }
-        val bean = finalTrackInfo.subtitle
-        if (bean.isEmpty()) {
+        val bean = trackInfo.subtitle
+        if (bean.size < 1) {
             Toast.makeText(mContext, getString(R.string.vod_sub_na), Toast.LENGTH_SHORT).show()
             return
         }
@@ -430,27 +413,26 @@ class PlayActivity : BaseActivity() {
                 }
             }
 
-            override fun getDisplay(val_: TrackInfoBean): String = (val_.name ?: "") + if (TextUtils.isEmpty(val_.language)) "" else " " + val_.language
+            override fun getDisplay(val_: TrackInfoBean): String = val_.name + if (TextUtils.isEmpty(val_.language)) "" else " " + val_.language
         }, object : DiffUtil.ItemCallback<TrackInfoBean>() {
             override fun areItemsTheSame(oldItem: TrackInfoBean, newItem: TrackInfoBean): Boolean = oldItem.trackId == newItem.trackId
             override fun areContentsTheSame(oldItem: TrackInfoBean, newItem: TrackInfoBean): Boolean = oldItem.trackId == newItem.trackId
-        }, bean, finalTrackInfo.getSubtitleSelected(false))
+        }, bean, trackInfo.getSubtitleSelected(false))
         dialog.show()
     }
 
     fun selectMyAudioTrack() {
-        val mediaPlayer = mVideoView.mediaPlayer ?: return
+        val mediaPlayer = mVideoView.mediaPlayer
         var trackInfo: TrackInfo? = null
         if (mediaPlayer is IjkmPlayer) trackInfo = mediaPlayer.trackInfo
         if (mediaPlayer is EXOmPlayer) trackInfo = mediaPlayer.trackInfo
         if (mediaPlayer is AndroidMediaPlayer) trackInfo = mediaPlayer.trackInfo
-        val finalTrackInfo = trackInfo
-        if (finalTrackInfo == null) {
+        if (trackInfo == null) {
             Toast.makeText(mContext, getString(R.string.vod_no_audio), Toast.LENGTH_SHORT).show()
             return
         }
-        val bean = finalTrackInfo.audio
-        if (bean.isEmpty()) {
+        val bean = trackInfo.audio
+        if (bean.size < 1) {
             Toast.makeText(mContext, getString(R.string.vod_no_audio), Toast.LENGTH_SHORT).show()
             return
         }
@@ -479,13 +461,13 @@ class PlayActivity : BaseActivity() {
             }
 
             override fun getDisplay(val_: TrackInfoBean): String {
-                val name = (val_.name ?: "").replace("AUDIO,", "").replace("N/A,", "").replace(" ", "")
+                var name = val_.name.replace("AUDIO,", "").replace("N/A,", "").replace(" ", "")
                 return name + if (TextUtils.isEmpty(val_.language)) "" else " " + val_.language
             }
         }, object : DiffUtil.ItemCallback<TrackInfoBean>() {
             override fun areItemsTheSame(oldItem: TrackInfoBean, newItem: TrackInfoBean): Boolean = oldItem.trackId == newItem.trackId
             override fun areContentsTheSame(oldItem: TrackInfoBean, newItem: TrackInfoBean): Boolean = oldItem.trackId == newItem.trackId
-        }, bean, finalTrackInfo.getAudioSelected(false))
+        }, bean, trackInfo.getAudioSelected(false))
         dialog.show()
     }
 
@@ -553,11 +535,7 @@ class PlayActivity : BaseActivity() {
         OkGo.getInstance().cancelTag("m3u8-1")
         OkGo.getInstance().cancelTag("m3u8-2")
         val hheaders = HttpHeaders()
-        if (headers != null) {
-            for ((k, v) in headers) {
-                hheaders.put(k, v)
-            }
-        }
+        headers?.forEach { (k, v) -> hheaders.put(k, v) }
         OkGo.get<String>(url).tag("m3u8-1").headers(hheaders).execute(object : AbsCallback<String>() {
             override fun onSuccess(response: Response<String>) {
                 val content = response.body() ?: ""
@@ -593,7 +571,7 @@ class PlayActivity : BaseActivity() {
                     return
                 }
                 val finalforwardurl = forwardurl
-                OkGo.get<String>(finalforwardurl).tag("m3u8-2").headers(hheaders).execute(object : AbsCallback<String>() {
+                OkGo.get<String>(forwardurl).tag("m3u8-2").headers(hheaders).execute(object : AbsCallback<String>() {
                     override fun onSuccess(response: Response<String>) {
                         val content2 = response.body() ?: ""
                         val ilast2 = finalforwardurl.lastIndexOf('/')
@@ -625,15 +603,13 @@ class PlayActivity : BaseActivity() {
                 var finalUrl = url
                 videoURL = finalUrl
                 try {
-                    val cfg = mVodPlayerCfg
-                    val playerType = if (cfg != null) cfg.getInt("pl") else 1
+                    val playerType = mVodPlayerCfg?.optInt("pl", 1) ?: 1
                     extPlay = false
                     if (playerType >= 10) {
-                        val info = mVodInfo
-                        val sMap = info?.seriesMap
-                        val vs = sMap?.get(info.playFlag ?: "")?.get(info.playIndex)
+                        val playFlag = mVodInfo?.playFlag ?: ""
+                        val vs = mVodInfo?.seriesMap?.get(playFlag)?.get(mVodInfo?.playIndex ?: 0)
                         if (vs != null) {
-                            val playTitle = (info?.name ?: "") + " : " + (vs.name ?: "")
+                            val playTitle = (mVodInfo?.name ?: "") + " : " + (vs.name ?: "")
                             setTip("调用外部播放器" + PlayerHelper.getPlayerName(playerType) + "进行播放", true, false)
                             var callResult = false
                             when (playerType) {
@@ -651,8 +627,8 @@ class PlayActivity : BaseActivity() {
                                 }
                             }
                             setTip("调用外部播放器" + PlayerHelper.getPlayerName(playerType) + if (callResult) "成功" else "失败", callResult, !callResult)
+                            return@runOnUiThread
                         }
-                        return@runOnUiThread
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
@@ -676,13 +652,13 @@ class PlayActivity : BaseActivity() {
     }
 
     private fun initSubtitleView() {
-        val mediaPlayer = mVideoView.mediaPlayer ?: return
+        val mediaPlayer = mVideoView.mediaPlayer
         var trackInfo: TrackInfo? = null
         if (mediaPlayer is IjkmPlayer) {
             trackInfo = mediaPlayer.trackInfo
-            if (trackInfo != null && trackInfo.subtitle.isNotEmpty()) mController.mSubtitleView.hasInternal = true
+            if (trackInfo != null && trackInfo.subtitle.size > 0) mController.mSubtitleView.hasInternal = true
             mediaPlayer.setOnTimedTextListener { _, text ->
-                if (mController.mSubtitleView.isInternal) {
+                if (mController.mSubtitleView.isInternal && text != null) {
                     val subtitle = Subtitle()
                     subtitle.content = text.text
                     mController.mSubtitleView.onSubtitleChanged(subtitle)
@@ -691,7 +667,7 @@ class PlayActivity : BaseActivity() {
         }
         if (mediaPlayer is EXOmPlayer) {
             trackInfo = mediaPlayer.trackInfo
-            if (trackInfo != null && trackInfo.subtitle.isNotEmpty()) mController.mSubtitleView.hasInternal = true
+            if (trackInfo != null && trackInfo.subtitle.size > 0) mController.mSubtitleView.hasInternal = true
             mediaPlayer.setOnTimedTextListener(object : Player.Listener {
                 override fun onCues(cues: List<Cue>) {
                     if (cues.isNotEmpty()) {
@@ -711,8 +687,7 @@ class PlayActivity : BaseActivity() {
         }
         mController.mSubtitleView.bindToMediaPlayer(mediaPlayer)
         mController.mSubtitleView.setPlaySubtitleCacheKey(subtitleCacheKey)
-        val sCacheKey = subtitleCacheKey
-        val subtitlePathCache = if (sCacheKey != null) CacheManager.getCache(MD5.string2MD5(sCacheKey)) as? String else null
+        val subtitlePathCache = CacheManager.getCache(MD5.string2MD5(subtitleCacheKey)) as? String
         if (!subtitlePathCache.isNullOrEmpty()) {
             mController.mSubtitleView.setSubtitlePath(subtitlePathCache)
         } else {
@@ -720,7 +695,7 @@ class PlayActivity : BaseActivity() {
                 mController.mSubtitleView.setSubtitlePath(playSubtitle)
             } else if (mController.mSubtitleView.hasInternal) {
                 mController.mSubtitleView.isInternal = true
-                if (mediaPlayer is IjkmPlayer && trackInfo != null && trackInfo.subtitle.isNotEmpty()) {
+                if (mediaPlayer is IjkmPlayer && trackInfo != null && trackInfo.subtitle.size > 0) {
                     val subtitleTrackList = trackInfo.subtitle
                     val selectedIndex = trackInfo.getSubtitleSelected(true)
                     var hasCh = false
@@ -786,10 +761,10 @@ class PlayActivity : BaseActivity() {
                     try {
                         val hds = JSONObject(info.getString("header"))
                         val keys = hds.keys()
+                        val hMap = HashMap<String, String>()
                         while (keys.hasNext()) {
                             val key = keys.next()
-                            if (headers == null) headers = HashMap()
-                            headers[key] = hds.getString(key)
+                            hMap[key] = hds.getString(key)
                             if (key.equals("user-agent", ignoreCase = true)) {
                                 webUserAgent = hds.getString(key).trim()
                             } else if (key.equals("cookie", ignoreCase = true)) {
@@ -798,7 +773,8 @@ class PlayActivity : BaseActivity() {
                                 }
                             }
                         }
-                        webHeaderMap = headers
+                        headers = hMap
+                        webHeaderMap = hMap
                     } catch (ignored: Throwable) {}
                 }
                 if (parse || jx) {
@@ -817,8 +793,8 @@ class PlayActivity : BaseActivity() {
         }
     }
 
-    private fun checkDanmu(danmu: String?) {
-        danmuText = danmu
+    private fun checkDanmu(danmaku: String?) {
+        danmuText = danmaku
         mDanmuView.release()
         mDanmuView.visibility = if (TextUtils.isEmpty(danmuText) || !HawkUtils.getDanmuOpen()) View.GONE else View.VISIBLE
         if (TextUtils.isEmpty(danmuText) || !HawkUtils.getDanmuOpen() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode)) return
@@ -841,37 +817,36 @@ class PlayActivity : BaseActivity() {
     }
 
     fun initPlayerCfg() {
-        mVodPlayerCfg = try { JSONObject(mVodInfo!!.playerCfg) } catch (th: Throwable) { JSONObject() }
+        mVodPlayerCfg = try { JSONObject(mVodInfo?.playerCfg ?: "{}") } catch (th: Throwable) { JSONObject() }
         try {
-            if (!mVodPlayerCfg!!.has("pl")) {
+            if (mVodPlayerCfg?.has("pl") == false) {
                 var playType = Hawk.get(HawkConfig.PLAY_TYPE, 1)
-                if (HawkUtils.getVodPlayerPreferredConfigurationFile() && sourceBean!!.playerType != -1) {
+                if (HawkUtils.getVodPlayerPreferredConfigurationFile() && (sourceBean?.playerType ?: -1) != -1) {
                     playType = sourceBean!!.playerType
                 }
-                mVodPlayerCfg!!.put("pl", playType)
+                mVodPlayerCfg?.put("pl", playType)
             }
-            if (!mVodPlayerCfg!!.has("pr")) mVodPlayerCfg!!.put("pr", Hawk.get(HawkConfig.PLAY_RENDER, 0))
-            if (!mVodPlayerCfg!!.has("ijk")) mVodPlayerCfg!!.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, ""))
-            if (!mVodPlayerCfg!!.has("sc")) mVodPlayerCfg!!.put("sc", Hawk.get(HawkConfig.PLAY_SCALE, 0))
-            if (!mVodPlayerCfg!!.has("sp")) mVodPlayerCfg!!.put("sp", 1.0)
-            if (!mVodPlayerCfg!!.has("st")) mVodPlayerCfg!!.put("st", 0)
-            if (!mVodPlayerCfg!!.has("et")) mVodPlayerCfg!!.put("et", 0)
+            if (mVodPlayerCfg?.has("pr") == false) mVodPlayerCfg?.put("pr", Hawk.get(HawkConfig.PLAY_RENDER, 0))
+            if (mVodPlayerCfg?.has("ijk") == false) mVodPlayerCfg?.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, ""))
+            if (mVodPlayerCfg?.has("sc") == false) mVodPlayerCfg?.put("sc", Hawk.get(HawkConfig.PLAY_SCALE, 0))
+            if (mVodPlayerCfg?.has("sp") == false) mVodPlayerCfg?.put("sp", 1.0)
+            if (mVodPlayerCfg?.has("st") == false) mVodPlayerCfg?.put("st", 0)
+            if (mVodPlayerCfg?.has("et") == false) mVodPlayerCfg?.put("et", 0)
         } catch (ignored: Throwable) {}
         mController.setPlayerConfig(mVodPlayerCfg)
     }
 
     fun initPlayerDrive() {
-        val cfg = mVodPlayerCfg ?: return
         try {
-            if (!cfg.has("pl")) cfg.put("pl", Hawk.get(HawkConfig.PLAY_TYPE, 1))
-            if (!cfg.has("pr")) cfg.put("pr", Hawk.get(HawkConfig.PLAY_RENDER, 0))
-            if (!cfg.has("ijk")) cfg.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, ""))
-            if (!cfg.has("sc")) cfg.put("sc", Hawk.get(HawkConfig.PLAY_SCALE, 0))
-            if (!cfg.has("sp")) cfg.put("sp", 1.0)
-            if (!cfg.has("st")) cfg.put("st", 0)
-            if (!cfg.has("et")) cfg.put("et", 0)
+            if (mVodPlayerCfg?.has("pl") == false) mVodPlayerCfg?.put("pl", Hawk.get(HawkConfig.PLAY_TYPE, 1))
+            if (mVodPlayerCfg?.has("pr") == false) mVodPlayerCfg?.put("pr", Hawk.get(HawkConfig.PLAY_RENDER, 0))
+            if (mVodPlayerCfg?.has("ijk") == false) mVodPlayerCfg?.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, ""))
+            if (mVodPlayerCfg?.has("sc") == false) mVodPlayerCfg?.put("sc", Hawk.get(HawkConfig.PLAY_SCALE, 0))
+            if (mVodPlayerCfg?.has("sp") == false) mVodPlayerCfg?.put("sp", 1.0)
+            if (mVodPlayerCfg?.has("st") == false) mVodPlayerCfg?.put("st", 0)
+            if (mVodPlayerCfg?.has("et") == false) mVodPlayerCfg?.put("et", 0)
         } catch (ignored: Throwable) {}
-        mController.setPlayerConfig(cfg)
+        mController.setPlayerConfig(mVodPlayerCfg)
     }
 
     private var extPlay = false
@@ -945,7 +920,11 @@ class PlayActivity : BaseActivity() {
                     }
                 }
             }
-            registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION), Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION))
+            }
         } else {
             if (onStopCalled) mVideoView.release()
             pipActionReceiver?.let { unregisterReceiver(it) }
@@ -972,36 +951,32 @@ class PlayActivity : BaseActivity() {
     private var sourceBean: SourceBean? = null
 
     fun playNext(inProgress: Boolean) {
-        val info = mVodInfo ?: return
-        val sMap = info.seriesMap
-        val series = if (sMap != null) sMap[info.playFlag ?: ""] else null
-        if (series == null || info.playIndex + 1 >= series.size) {
-            Toast.makeText(this, if (info.reverseSort) "已经是第一集了" else "已经是最后一集了", Toast.LENGTH_SHORT).show()
+        val series = mVodInfo?.seriesMap?.get(mVodInfo?.playFlag ?: "")
+        if (series == null || (mVodInfo?.playIndex ?: 0) + 1 >= series.size) {
+            Toast.makeText(this, if (mVodInfo?.reverseSort == true) "已经是第一集了" else "已经是最后一集了", Toast.LENGTH_SHORT).show()
             if (inProgress) finish()
             return
         }
-        info.playIndex++
-        if (info.playGroupCount > 0) {
-            info.playGroup += info.playIndex / info.playGroupCount
-            info.playIndex %= info.playGroupCount
+        mVodInfo!!.playIndex++
+        if (mVodInfo!!.playGroupCount > 0) {
+            mVodInfo!!.playGroup += mVodInfo!!.playIndex / mVodInfo!!.playGroupCount
+            mVodInfo!!.playIndex %= mVodInfo!!.playGroupCount
         }
         play(false)
     }
 
     fun playPrevious() {
-        val info = mVodInfo ?: return
-        val sMap = info.seriesMap
-        val series = if (sMap != null) sMap[info.playFlag ?: ""] else null
-        if (series == null || info.playIndex - 1 < 0) {
-            Toast.makeText(this, if (info.reverseSort) "已经是最后一集了" else "已经是第一集了", Toast.LENGTH_SHORT).show()
+        val series = mVodInfo?.seriesMap?.get(mVodInfo?.playFlag ?: "")
+        if (series == null || (mVodInfo?.playIndex ?: 0) - 1 < 0) {
+            Toast.makeText(this, if (mVodInfo?.reverseSort == true) "已经是最后一集了" else "已经是第一集了", Toast.LENGTH_SHORT).show()
             return
         }
-        if (info.playIndex == 0) {
-            if (info.playGroup > 0) {
-                info.playGroup--
-                info.playIndex = info.playGroupCount - 1
+        if (mVodInfo!!.playIndex == 0) {
+            if (mVodInfo!!.playGroup > 0) {
+                mVodInfo!!.playGroup--
+                mVodInfo!!.playIndex = mVodInfo!!.playGroupCount - 1
             }
-        } else info.playIndex--
+        } else mVodInfo!!.playIndex--
         play(false)
     }
 
@@ -1024,8 +999,8 @@ class PlayActivity : BaseActivity() {
 
     fun switchPlayer() {
         try {
-            val playerType = if (mVodPlayerCfg!!.getInt("pl") == 1) 2 else 1
-            mVodPlayerCfg!!.put("pl", playerType)
+            val playerType = if (mVodPlayerCfg?.optInt("pl") == 1) 2 else 1
+            mVodPlayerCfg?.put("pl", playerType)
             mController.setPlayerConfig(mVodPlayerCfg)
             mVodInfo!!.playerCfg = mVodPlayerCfg.toString()
             EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodPlayerCfg))
@@ -1039,22 +1014,21 @@ class PlayActivity : BaseActivity() {
     }
 
     fun play(reset: Boolean) {
-        val info = mVodInfo ?: return
-        val seriesMap = info.seriesMap
-        val playFlag = info.playFlag
-        val vs = seriesMap?.get(playFlag ?: "")?.get(info.playIndex) ?: return
+        val seriesMap = mVodInfo?.seriesMap
+        val playFlag = mVodInfo?.playFlag ?: ""
+        val vs = seriesMap?.get(playFlag)?.get(mVodInfo?.playIndex ?: 0) ?: return
 
-        EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH, info.playIndex))
-        EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH_NOTIFY, (info.name ?: "") + "&&" + (vs.name ?: "")))
+        EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodInfo!!.playIndex))
+        EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_REFRESH_NOTIFY, (mVodInfo!!.name ?: "") + "&&" + (vs.name ?: "")))
         setTip("正在获取播放信息", true, false)
-        mController.setTitle((info.name ?: "") + " : " + (vs.name ?: ""))
-        RemoteServer.vodName = info.name
+        mController.setTitle((mVodInfo!!.name ?: "") + " : " + (vs.name ?: ""))
+        RemoteServer.vodName = mVodInfo!!.name
         RemoteServer.artist = vs.name
         stopParse()
         initParseLoadFound()
         mVideoView.release()
-        subtitleCacheKey = (info.sourceKey ?: "") + "-" + (info.id ?: "") + "-" + (info.playFlag ?: "") + "-" + info.playIndex + "-" + (vs.name ?: "") + "-subt"
-        progressKey = (info.sourceKey ?: "") + (info.id ?: "") + (info.playFlag ?: "") + info.playIndex
+        subtitleCacheKey = (mVodInfo!!.sourceKey ?: "") + "-" + (mVodInfo!!.id ?: "") + "-" + (mVodInfo!!.playFlag ?: "") + "-" + mVodInfo!!.playIndex + "-" + (vs.name ?: "") + "-subt"
+        progressKey = (mVodInfo!!.sourceKey ?: "") + (mVodInfo!!.id ?: "") + (mVodInfo!!.playFlag ?: "") + mVodInfo!!.playIndex
 
         val pKey = progressKey
         val sKey = subtitleCacheKey
@@ -1068,14 +1042,16 @@ class PlayActivity : BaseActivity() {
             initPlayerDrive()
             mController.showParse(false)
             var headers: HashMap<String, String>? = null
-            if (!info.playerCfg.isNullOrEmpty()) {
-                val playerConfig = JsonParser.parseString(info.playerCfg).asJsonObject
+            val playerCfg = mVodInfo?.playerCfg
+            if (!playerCfg.isNullOrEmpty()) {
+                val playerConfig = JsonParser.parseString(playerCfg).asJsonObject
                 if (playerConfig.has("headers")) {
-                    headers = HashMap()
+                    val heads = HashMap<String, String>()
                     playerConfig.getAsJsonArray("headers").forEach { el ->
                         val h = el.asJsonObject
-                        headers[h.get("name").asString] = h.get("value").asString
+                        heads[h.get("name").asString] = h.get("value").asString
                     }
+                    headers = heads
                 }
             }
             playUrl(vUrl.replace("tvbox-drive://", ""), headers)
@@ -1094,7 +1070,7 @@ class PlayActivity : BaseActivity() {
             mController.showParse(false)
             return
         }
-        sourceViewModel.getPlay(sourceKey, info.playFlag, pKey, vs.url, sKey)
+        sourceViewModel.getPlay(sourceKey, mVodInfo?.playFlag, progressKey, vs.url, subtitleCacheKey)
     }
 
     private var playSubtitle: String? = null
@@ -1119,13 +1095,12 @@ class PlayActivity : BaseActivity() {
             }
             if (parseBean == null) parseBean = ParseBean().apply { type = 0; this.url = playUrl }
         }
-        doParse(parseBean!!)
+        parseBean?.let { doParse(it) }
     }
 
     @Throws(JSONException::class)
     fun jsonParse(input: String?, json: String?): JSONObject? {
-        if (json == null) return null
-        val data = JSONObject(json)
+        val data = JSONObject(json ?: "{}")
         var url = if (data.has("data")) data.getJSONObject("data").getString("url") else data.getString("url")
         if (url.startsWith("//")) url = "http:$url"
         if (!url.startsWith("http")) return null
@@ -1160,14 +1135,14 @@ class PlayActivity : BaseActivity() {
                         if (obj.has("header")) {
                             val hds = obj.optJSONObject("header")
                             val hm = HashMap<String, String>()
-                            hds.keys().forEach { key ->
+                            hds?.keys()?.forEach { key ->
                                 if (key.equals("user-agent", true)) webUserAgent = hds.getString(key).trim() else hm[key] = hds.optString(key, "")
                             }
                             if (hm.isNotEmpty()) webHeaderMap = hm
                         }
                     } catch (ignored: Throwable) {}
                 }
-                loadWebView(pb.url + webUrl)
+                loadWebView(pb.url + (webUrl ?: ""))
             }
             1 -> {
                 setTip("正在解析播放地址", true, false)
@@ -1177,33 +1152,23 @@ class PlayActivity : BaseActivity() {
                         val obj = JSONObject(ext)
                         if (obj.has("header")) {
                             val head = obj.optJSONObject("header")
-                            if (head != null) {
-                                head.keys().forEach { key -> hds.put(key, head.optString(key, "")) }
-                            }
+                            head?.keys()?.forEach { key -> hds.put(key, head.optString(key, "")) }
                         }
                     } catch (ignored: Throwable) {}
                 }
-                val wUrl = webUrl ?: ""
-                OkGo.get<String>(pb.url + encodeUrl(wUrl)).tag("json_jx").headers(hds).execute(object : AbsCallback<String>() {
+                OkGo.get<String>(pb.url + encodeUrl(webUrl!!)).tag("json_jx").headers(hds).execute(object : AbsCallback<String>() {
                     override fun convertResponse(response: okhttp3.Response): String? = response.body()?.string() ?: throw IllegalStateException("网络请求错误")
                     override fun onSuccess(response: Response<String>) {
                         try {
-                            val rs = jsonParse(wUrl, response.body())
-                            if (rs != null) {
-                                var hdrs: HashMap<String, String>? = null
-                                if (rs.has("header")) {
-                                    val head = rs.getJSONObject("header")
-                                    hdrs = HashMap()
-                                    val keys = head.keys()
-                                    while (keys.hasNext()) {
-                                        val key = keys.next()
-                                        hdrs[key] = head.getString(key)
-                                    }
-                                }
-                                playUrl(rs.getString("url"), hdrs)
-                            } else {
-                                errorWithRetry("解析错误", false)
+                            val rs = jsonParse(webUrl, response.body())!!
+                            var headers: HashMap<String, String>? = null
+                            if (rs.has("header")) {
+                                val head = rs.getJSONObject("header")
+                                val hMap = HashMap<String, String>()
+                                head.keys().forEach { key -> hMap[key] = head.getString(key) }
+                                headers = hMap
                             }
+                            playUrl(rs.getString("url"), headers)
                         } catch (e: Exception) {
                             errorWithRetry("解析错误", false)
                         }
@@ -1216,22 +1181,18 @@ class PlayActivity : BaseActivity() {
             }
             2 -> {
                 setTip("正在解析播放地址", true, false)
-                val executor = Executors.newSingleThreadExecutor()
-                parseThreadPool = executor
+                parseThreadPool = Executors.newSingleThreadExecutor()
                 val jxs = LinkedHashMap<String, String>()
                 ApiConfig.get().parseBeanList.filter { it.type == 1 }.forEach { jxs[it.name] = it.mixUrl() }
-                executor.execute {
+                parseThreadPool?.execute {
                     val rs = ApiConfig.get().jsonExt(pb.url, jxs, webUrl)
                     if (rs == null || !rs.has("url") || rs.optString("url").isEmpty()) setTip("解析错误", false, true) else {
                         var headers: HashMap<String, String>? = null
                         if (rs.has("header")) {
                             val head = rs.getJSONObject("header")
-                            headers = HashMap()
-                            val keys = head.keys()
-                            while (keys.hasNext()) {
-                                val key = keys.next()
-                                headers[key] = head.getString(key)
-                            }
+                            val hMap = HashMap<String, String>()
+                            head.keys().forEach { key -> hMap[key] = head.getString(key) }
+                            headers = hMap
                         }
                         if (rs.has("jxFrom")) runOnUiThread { Toast.makeText(mContext, "解析来自:${rs.optString("jxFrom")}", Toast.LENGTH_SHORT).show() }
                         if (rs.optInt("parse", 0) == 1) loadUrl(DefaultConfig.checkReplaceProxy(rs.optString("url", ""))) else playUrl(rs.optString("url", ""), headers)
@@ -1244,8 +1205,7 @@ class PlayActivity : BaseActivity() {
 
     private fun parseMix(pb: ParseBean, isSuper: Boolean) {
         setTip("正在解析播放地址", true, false)
-        val executor = Executors.newSingleThreadExecutor()
-        parseThreadPool = executor
+        parseThreadPool = Executors.newSingleThreadExecutor()
         val jxs = LinkedHashMap<String, HashMap<String, String>>()
         var extendName = ""
         ApiConfig.get().parseBeanList.forEach { p ->
@@ -1257,7 +1217,7 @@ class PlayActivity : BaseActivity() {
             jxs[p.name] = data
         }
         val finalExtendName = extendName
-        executor.execute {
+        parseThreadPool?.execute {
             if (isSuper) {
                 val rs = SuperParse.parse(jxs, parseFlag + "123", webUrl)
                 if (!rs.has("url") || rs.optString("url").isEmpty()) setTip("解析错误", false, true) else {
@@ -1270,7 +1230,7 @@ class PlayActivity : BaseActivity() {
                             mHandler.sendEmptyMessageDelayed(100, 20000)
                             loadWebView(url)
                         }
-                        executor.execute { rsJsonJx(SuperParse.doJsonJx(webUrl), true) }
+                        parseThreadPool?.execute { rsJsonJx(SuperParse.doJsonJx(webUrl), true) }
                     } else rsJsonJx(rs, false)
                 }
             } else {
@@ -1296,20 +1256,15 @@ class PlayActivity : BaseActivity() {
             if (rs == null || !rs.has("url")) return
             stopLoadWebView(false)
         }
-        if (rs == null) return
         var headers: HashMap<String, String>? = null
-        if (rs.has("header")) {
+        if (rs?.has("header") == true) {
             val head = rs.getJSONObject("header")
-            val hdrs = HashMap<String, String>()
-            val keys = head.keys()
-            while (keys.hasNext()) {
-                val key = keys.next()
-                hdrs[key] = head.getString(key)
-            }
-            headers = hdrs
+            val hMap = HashMap<String, String>()
+            head.keys().forEach { key -> hMap[key] = head.getString(key) }
+            headers = hMap
         }
-        if (rs.has("jxFrom")) runOnUiThread { Toast.makeText(mContext, "解析来自:${rs.optString("jxFrom")}", Toast.LENGTH_SHORT).show() }
-        playUrl(rs.optString("url", ""), headers)
+        if (rs?.has("jxFrom") == true) runOnUiThread { Toast.makeText(mContext, "解析来自:${rs.optString("jxFrom")}", Toast.LENGTH_SHORT).show() }
+        playUrl(rs?.optString("url", "") ?: "", headers)
     }
 
     private var mXwalkWebView: XWalkView? = null
@@ -1323,12 +1278,7 @@ class PlayActivity : BaseActivity() {
         if (mSysWebView == null && mXwalkWebView == null) {
             if (!Hawk.get(HawkConfig.PARSE_WEBVIEW, true)) {
                 XWalkUtils.tryUseXWalk(mContext, object : XWalkUtils.XWalkState {
-                    override fun success() {
-                        val sBean = sourceBean
-                        val selector = sBean?.clickSelector
-                        initWebView(sBean == null || selector.isNullOrEmpty())
-                        loadUrl(url)
-                    }
+                    override fun success() { initWebView((sourceBean?.clickSelector ?: "").isEmpty()); loadUrl(url) }
                     override fun fail() { Toast.makeText(mContext, "XWalkView不兼容，已替换为系统自带WebView", Toast.LENGTH_SHORT).show(); initWebView(true); loadUrl(url) }
                     override fun ignore() { Toast.makeText(mContext, "XWalkView运行组件未下载，已替换为系统自带WebView", Toast.LENGTH_SHORT).show(); initWebView(true); loadUrl(url) }
                 })
@@ -1389,7 +1339,7 @@ class PlayActivity : BaseActivity() {
     fun checkVideoFormat(url: String): Boolean {
         if (url.contains("url=http") || url.contains(".html")) return false
         try {
-            if (sourceBean!!.type == 3) {
+            if (sourceBean?.type == 3) {
                 ApiConfig.get().getCSP(sourceBean)?.let { sp -> if (sp.manualVideoCheck()) return sp.isVideoFormat(url) }
             }
         } catch (ignored: Exception) {}
@@ -1399,7 +1349,7 @@ class PlayActivity : BaseActivity() {
     inner class MyWebView(context: Context) : WebView(context) {
         override fun setOverScrollMode(mode: Int) {
             super.setOverScrollMode(mode)
-            if (context is Activity) AutoSize.autoConvertDensityOfCustomAdapt(context as Activity, this@PlayActivity)
+            if (mContext is Activity) AutoSize.autoConvertDensityOfCustomAdapt(mContext as Activity, this@PlayActivity)
         }
         override fun dispatchKeyEvent(event: KeyEvent?): Boolean = false
     }
@@ -1407,7 +1357,7 @@ class PlayActivity : BaseActivity() {
     inner class MyXWalkView(context: Context) : XWalkView(context) {
         override fun setOverScrollMode(mode: Int) {
             super.setOverScrollMode(mode)
-            if (context is Activity) AutoSize.autoConvertDensityOfCustomAdapt(context as Activity, this@PlayActivity)
+            if (mContext is Activity) AutoSize.autoConvertDensityOfCustomAdapt(mContext as Activity, this@PlayActivity)
         }
         override fun dispatchKeyEvent(event: KeyEvent?): Boolean = false
     }
@@ -1458,8 +1408,7 @@ class PlayActivity : BaseActivity() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             LOG.i("echo-onPageFinished url:$url")
-            val sBean = sourceBean
-            if (url != null && url != "about:blank" && sBean != null) mController.evaluateScript(sBean, url, view, null)
+            if (url != "about:blank" && sourceBean != null) mController.evaluateScript(sourceBean!!, url!!, view, null)
             mHandler.sendEmptyMessage(200)
         }
 
@@ -1471,17 +1420,13 @@ class PlayActivity : BaseActivity() {
                 if (yxdm(url, headers)) return null
                 if (checkVideoFormat(url)) {
                     loadFoundVideoUrls.add(url)
-                    val hdrs = HashMap<String, String>()
-                    for (entry in headers.entries) {
-                        hdrs[entry.key] = entry.value
-                    }
+                    val hdrs = HashMap(headers)
                     loadFoundVideoUrlsHeader[url] = hdrs
                     LOG.i("loadFoundVideoUrl:$url")
                     if (loadFoundCount.incrementAndGet() == 1) {
                         val vUrl = loadFoundVideoUrls.poll() ?: return null
                         mHandler.removeMessages(100)
-                        val cookie = CookieManager.getInstance().getCookie(vUrl)
-                        if (cookie != null && cookie.isNotEmpty()) hdrs["Cookie"] = " $cookie"
+                        CookieManager.getInstance().getCookie(vUrl)?.let { if (it.isNotEmpty()) hdrs["Cookie"] = " $it" }
                         playUrl(vUrl, hdrs)
                         SuperParse.stopJsonJx()
                         stopLoadWebView(false)
@@ -1541,8 +1486,7 @@ class PlayActivity : BaseActivity() {
         override fun onLoadFinished(view: XWalkView?, url: String?) {
             super.onLoadFinished(view, url)
             LOG.i("echo-onPageFinished url:$url")
-            val sBean = sourceBean
-            if (url != null && url != "about:blank" && sBean != null) mController.evaluateScript(sBean, url, null, view)
+            if (url != "about:blank" && sourceBean != null) mController.evaluateScript(sourceBean!!, url!!, null, view)
         }
 
         override fun shouldInterceptLoadRequest(view: XWalkView?, request: XWalkWebResourceRequest?): XWalkWebResourceResponse? {
@@ -1552,27 +1496,16 @@ class PlayActivity : BaseActivity() {
             val ad = loadedUrls.getOrPut(url) { AdBlocker.isAd(url) }
             if (!ad && checkVideoFormat(url)) {
                 val webHeaders = HashMap<String, String>()
-                val requestHeaders = request?.requestHeaders
-                if (requestHeaders != null) {
-                    for (entry in requestHeaders.entries) {
-                        val k = entry.key
-                        val v = entry.value
-                        if (k.equals("user-agent", true) || k.equals("referer", true) || k.equals("origin", true)) {
-                            webHeaders[k] = " $v"
-                        }
-                    }
+                request?.requestHeaders?.forEach { (k, v) ->
+                    if (k.equals("user-agent", true) || k.equals("referer", true) || k.equals("origin", true)) webHeaders[k] = " $v"
                 }
                 loadFoundVideoUrls.add(url)
-                val hdrs = HashMap<String, String>()
-                for (entry in webHeaders.entries) {
-                    hdrs[entry.key] = entry.value
-                }
+                val hdrs = HashMap(webHeaders)
                 loadFoundVideoUrlsHeader[url] = hdrs
                 if (loadFoundCount.incrementAndGet() == 1) {
                     mHandler.removeMessages(100)
                     val vUrl = loadFoundVideoUrls.poll() ?: return null
-                    val cookie = CookieManager.getInstance().getCookie(vUrl)
-                    if (cookie != null && cookie.isNotEmpty()) hdrs["Cookie"] = " $cookie"
+                    CookieManager.getInstance().getCookie(vUrl)?.let { if (it.isNotEmpty()) hdrs["Cookie"] = " $it" }
                     playUrl(vUrl, hdrs)
                     SuperParse.stopJsonJx()
                     stopLoadWebView(false)

@@ -143,7 +143,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         if(style!=null && Hawk.get(HawkConfig.HOME_REC, 0) == 1) {
             spanCount=ImgUtil.spanCountByStyle(style,spanCount);
         }
-        tvHotListForGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, spanCount)); 
+        tvHotListForGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, spanCount));
         String tvRate="";
         if(Hawk.get(HawkConfig.HOME_REC, 0) == 0){
             tvRate="豆瓣热播";
@@ -207,15 +207,15 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 return true;
             }
         });
-        
+
         tvHistory.setOnLongClickListener(new View.OnLongClickListener() {
-        	@Override
+		@Override
             public boolean onLongClick(View v) {
                 HomeActivity.homeRecf();
                 return HomeActivity.reHome(mContext);
             }
         });
-        
+
         // Grid View
         tvHotListForGrid.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
@@ -324,7 +324,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 Movie.Video vod = new Movie.Video();
                 vod.name = obj.get("title").getAsString();
                 vod.note = obj.get("rate").getAsString();
-                vod.pic = obj.get("cover").getAsString() + "@User-Agent=" + UA.random() + "@Referer=https://www.douban.com/";                
+                vod.pic = obj.get("cover").getAsString() + "@User-Agent=" + UA.random() + "@Referer=https://www.douban.com/";
                 result.add(vod);
             }
         } catch (Throwable th) {

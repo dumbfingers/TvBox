@@ -90,7 +90,7 @@ public class GridFragment extends BaseLazyFragment {
     protected int getLayoutResID() {
         return R.layout.fragment_grid;
     }
-    
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,11 +105,11 @@ public class GridFragment extends BaseLazyFragment {
         initViewModel();
         initData();
     }
-    
+
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("sortDataJson", GsonUtils.toJson(sortData));        
+        outState.putString("sortDataJson", GsonUtils.toJson(sortData));
     }
 
     private void changeView(String id,Boolean isFolder){
@@ -342,7 +342,7 @@ public class GridFragment extends BaseLazyFragment {
     }
 
     private void initData() {
-    	if (ApiConfig.get().getHomeSourceBean().getApi()==null) {
+	if (ApiConfig.get().getHomeSourceBean().getApi()==null) {
             showEmpty();
             return;
         }
@@ -370,7 +370,7 @@ public class GridFragment extends BaseLazyFragment {
     }
 
     public void showFilter() {
-    	if (sortData!=null && !sortData.filters.isEmpty() && gridFilterDialog == null) {
+	if (sortData!=null && !sortData.filters.isEmpty() && gridFilterDialog == null) {
             gridFilterDialog = new GridFilterDialog(mContext);
 //            gridFilterDialog.setData(sortData);
 //            gridFilterDialog.setOnDismiss(new GridFilterDialog.Callback() {

@@ -374,7 +374,7 @@ public class PlayFragment extends BaseLazyFragment {
         SubtitleDialog subtitleDialog = new SubtitleDialog(getActivity());
 
         subtitleDialog.setSubtitleViewListener(new SubtitleDialog.SubtitleViewListener() {
-        	@Override
+		@Override
             public void setTextSize(int size) {
                 mController.mSubtitleView.setTextSize(size);
             }@Override
@@ -389,15 +389,15 @@ public class PlayFragment extends BaseLazyFragment {
             }
         });
         subtitleDialog.setSearchSubtitleListener(new SubtitleDialog.SearchSubtitleListener() {
-        	@Override
+		@Override
             public void openSearchSubtitleDialog() {
                 SearchSubtitleDialog searchSubtitleDialog = new SearchSubtitleDialog(getActivity());
                 searchSubtitleDialog.setSubtitleLoader(new SearchSubtitleDialog.SubtitleLoader() {
-                	@Override
+			@Override
                     public void loadSubtitle(SubtitleBean subtitle) {
-                    	if (!isAdded()) return;
+			if (!isAdded()) return;
                         requireActivity().runOnUiThread(new Runnable() {
-                        	@Override
+				@Override
                             public void run() {
                                 String zimuUrl = subtitle.getUrl();
                                 LOG.i("Remote SubtitleBean Url: " + zimuUrl);
@@ -411,7 +411,7 @@ public class PlayFragment extends BaseLazyFragment {
                 });
               /*  EventBus.getDefault().register(searchSubtitleDialog);
                 searchSubtitleDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                	@Override
+			@Override
                     public void onDismiss(DialogInterface dialog) {
                         EventBus.getDefault().unregister(dialog);
                     }
@@ -425,7 +425,7 @@ public class PlayFragment extends BaseLazyFragment {
             }
         });
         subtitleDialog.setLocalFileChooserListener(new SubtitleDialog.LocalFileChooserListener() {
-        	@Override
+		@Override
             public void openLocalFileChooserDialog() {
                 new ChooserDialog(getActivity())
                     .withFilter(false, false, "srt", "ass", "scc", "stl", "ttml")
@@ -808,7 +808,7 @@ public class PlayFragment extends BaseLazyFragment {
                     mVideoView.release();
                     if (finalUrl != null) {
                         String url = finalUrl;
-                        videoURL = url;                        
+                        videoURL = url;
                         try {
                             int playerType = mVodPlayerCfg.getInt("pl");
                             // takagen99: Check for External Player
@@ -866,7 +866,7 @@ public class PlayFragment extends BaseLazyFragment {
     }
 
     private void initSubtitleView() {
-    	AbstractPlayer mediaPlayer = mVideoView.getMediaPlayer();
+	AbstractPlayer mediaPlayer = mVideoView.getMediaPlayer();
         TrackInfo trackInfo = null;
         if (mVideoView.getMediaPlayer() instanceof IjkmPlayer) {
             trackInfo = ((IjkmPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
@@ -1037,7 +1037,7 @@ public class PlayFragment extends BaseLazyFragment {
             } else {
                 errorWithRetry("获取播放信息错误", true);
             }
-        }        
+        }
     };
 
     private void checkDanmu(String danmu) {
@@ -1123,7 +1123,7 @@ public class PlayFragment extends BaseLazyFragment {
 
     // takagen99 : Picture-in-Picture support
     public boolean extPlay;
-    
+
     @Override
     public void onPause() {
         super.onPause();
@@ -1176,7 +1176,7 @@ public class PlayFragment extends BaseLazyFragment {
         Jianpian.finish();//停止p2p下载
         App.getInstance().setDashData(null);
     }
-    
+
     public MyVideoView getPlayer() {
         return mVideoView;
     }
@@ -1290,7 +1290,7 @@ public class PlayFragment extends BaseLazyFragment {
         }
     }
     public void play(boolean reset) {
-    	if (mVodInfo == null) return;
+	if (mVodInfo == null) return;
         VodInfo.VodSeries vs = mVodInfo.seriesMap.get(mVodInfo.playFlag).get(mVodInfo.getplayIndex());
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodInfo.getplayIndex()));
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH_NOTIFY, mVodInfo.name + "&&" + vs.name));

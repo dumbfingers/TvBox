@@ -20,11 +20,14 @@ import com.github.tvbox.osc.base.BaseActivity
 import com.github.tvbox.osc.bean.IJKCode
 import com.github.tvbox.osc.bean.ParseBean
 import com.github.tvbox.osc.bean.SourceBean
+import com.github.tvbox.osc.base.App
 import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.player.thirdparty.Kodi
 import com.github.tvbox.osc.player.thirdparty.MXPlayer
 import com.github.tvbox.osc.player.thirdparty.ReexPlayer
 import com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView
+import com.github.tvbox.osc.ui.activity.PlayActivity
+import com.github.tvbox.osc.ui.compose.activities.HomeComposeActivity
 import com.github.tvbox.osc.ui.activity.DetailActivity
 import com.github.tvbox.osc.ui.activity.HomeActivity
 import com.github.tvbox.osc.ui.adapter.ParseAdapter
@@ -449,7 +452,7 @@ class VodController(context: Context) : BaseController(context) {
                 if (KodiExist) players.add(12)
                 val context = mActivity ?: return@setOnClickListener
                 val dialog = SelectDialog<Int>(context)
-                dialog.setTip(HomeActivity.getRes().getString(R.string.dia_player))
+                dialog.setTip(App.getInstance().getResources().getString(R.string.dia_player))
                 dialog.setAdapter(null, object : SelectDialogAdapter.SelectDialogInterface<Int> {
                     override fun click(value: Int, pos: Int) {
                         try {
@@ -501,11 +504,11 @@ class VodController(context: Context) : BaseController(context) {
             if (mSubtitleView.visibility == GONE) {
                 mSubtitleView.visibility = VISIBLE
                 hideBottom()
-                Toast.makeText(context, HomeActivity.getRes().getString(R.string.vod_sub_on), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, App.getInstance().getResources().getString(R.string.vod_sub_on), Toast.LENGTH_SHORT).show()
             } else {
                 mSubtitleView.visibility = GONE
                 hideBottom()
-                Toast.makeText(context, HomeActivity.getRes().getString(R.string.vod_sub_off), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, App.getInstance().getResources().getString(R.string.vod_sub_off), Toast.LENGTH_SHORT).show()
             }
             true
         }
@@ -613,7 +616,9 @@ class VodController(context: Context) : BaseController(context) {
                 mDanmuSetting.visibility = GONE
                 mHandler.removeCallbacks(mHideBottomRunnable)
                 if (mActivity != null) {
-                    if (mActivity?.javaClass?.simpleName == "DetailActivity") {
+                    if (mActivity?.javaClass?.simpleName == "PlayActivity") {
+                        // (mActivity as? PlayActivity)?.toggleFullPreview()
+                    } else if (mActivity?.javaClass?.simpleName == "DetailActivity") {
                         (mActivity as? DetailActivity)?.toggleFullPreview()
                     } else {
                         mActivity?.finish()

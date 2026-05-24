@@ -20,11 +20,11 @@ public class SearchHelper {
             return null;
         }
         HashMap < String, String > mCheckSources = new HashMap < > ();
-        try {        	
+        try {
             HashMap<String, HashMap<String, String>> mCheckSourcesForApi = Hawk.get(HawkConfig.SOURCES_FOR_SEARCH, new HashMap<>());
             mCheckSources = mCheckSourcesForApi.get(api);
         } catch (Exception ignored) {
-            
+
         }
         if (mCheckSources == null || mCheckSources.size() <= 0) {
             if (mCheckSources == null) {

@@ -371,7 +371,7 @@ public class HomeActivity extends BaseActivity {
         homeRec++;
         Hawk.put(HawkConfig.HOME_REC, homeRec);
     }
-    
+
     public static boolean reHome(Context appContext) {
         Intent intent = new Intent(appContext, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -382,7 +382,7 @@ public class HomeActivity extends BaseActivity {
         return true;
     }
 
-    private boolean skipNextUpdate = false;	
+    private boolean skipNextUpdate = false;
     private void initViewModel() {
         sourceViewModel = new ViewModelProvider(this).get(SourceViewModel.class);
         sourceViewModel.sortResult.observe(this, new Observer<AbsSortXml>() {
@@ -454,7 +454,7 @@ public class HomeActivity extends BaseActivity {
             }
             if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
                 jumpActivity(LivePlayActivity.class);
-            }         
+            }
             return;
         }
         tvNameAnimation();
