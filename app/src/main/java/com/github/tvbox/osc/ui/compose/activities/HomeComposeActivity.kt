@@ -18,6 +18,9 @@ import com.github.tvbox.osc.ui.compose.activities.DetailComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.HistoryComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.CollectComposeActivity
 import com.github.tvbox.osc.ui.compose.activities.AppsComposeActivity
+import com.github.tvbox.osc.ui.compose.activities.PushComposeActivity
+import com.github.tvbox.osc.ui.activity.LivePlayActivity
+import com.github.tvbox.osc.ui.activity.DriveActivity
 
 class HomeComposeActivity : ComponentActivity() {
     private lateinit var sourceViewModel: SourceViewModel
@@ -61,6 +64,15 @@ class HomeComposeActivity : ComponentActivity() {
                     },
                     onCollectClick = {
                         startActivity(Intent(this, CollectComposeActivity::class.java))
+                    },
+                    onPushClick = {
+                        startActivity(Intent(this, PushComposeActivity::class.java))
+                    },
+                    onLiveClick = {
+                        startActivity(Intent(this, LivePlayActivity::class.java))
+                    },
+                    onDriveClick = {
+                        startActivity(Intent(this, DriveActivity::class.java))
                     },
                     onSettingsClick = {
                         startActivity(Intent(this, SettingsComposeActivity::class.java))
