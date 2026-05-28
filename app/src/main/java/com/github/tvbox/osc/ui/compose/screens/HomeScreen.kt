@@ -35,6 +35,7 @@ fun HomeScreen(
     onPushClick: (() -> Unit)? = null,
     onLiveClick: (() -> Unit)? = null,
     onDriveClick: (() -> Unit)? = null,
+    onGlobalSearchClick: (() -> Unit)? = null,
     onAppsClick: (() -> Unit)? = null,
     onSettingsClick: () -> Unit
 ) {
@@ -85,6 +86,12 @@ fun HomeScreen(
                 onDriveClick?.let {
                     Button(onClick = it) {
                         Text("Drive")
+                    }
+                }
+                onGlobalSearchClick?.let {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = it) {
+                        Text("Global Search")
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
