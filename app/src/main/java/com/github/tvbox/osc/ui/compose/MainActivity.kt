@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import android.widget.Toast
 import com.github.tvbox.osc.api.ApiConfig
 import com.github.tvbox.osc.bean.VodInfo
 import com.github.tvbox.osc.cache.RoomDataManger
@@ -33,6 +34,22 @@ class MainActivity : ComponentActivity() {
 
         videoView = MyVideoView(this)
         vodController = VodController(this)
+
+        com.github.tvbox.osc.server.ControlManager.get().startServer()
+        com.github.tvbox.osc.base.App.startWebserver()
+
+        ApiConfig.get().loadConfig(true, object : ApiConfig.LoadConfigCallback {
+            override fun success() {
+                sourceViewModel.getSort(ApiConfig.get().homeSourceBean.key)
+            }
+
+            override fun retry() {
+            }
+
+            override fun error(msg: String) {
+                Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+            }
+        }, this)
 
         setContent {
             TVBoxTheme {

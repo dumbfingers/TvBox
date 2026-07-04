@@ -226,7 +226,11 @@ public class DetailActivity extends BaseActivity {
                     }
                 }
             };
-            registerReceiver(mHomeKeyReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(mHomeKeyReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS), Context.RECEIVER_EXPORTED);
+            } else {
+                registerReceiver(mHomeKeyReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+            }
         }
     }
 
@@ -1205,7 +1209,11 @@ public class DetailActivity extends BaseActivity {
                     }
                 }
             };
-            registerReceiver(pipActionReceiver, new IntentFilter(BROADCAST_ACTION));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(pipActionReceiver, new IntentFilter(BROADCAST_ACTION), Context.RECEIVER_EXPORTED);
+            } else {
+                registerReceiver(pipActionReceiver, new IntentFilter(BROADCAST_ACTION));
+            }
 
         } else {
             if (pipActionReceiver != null) {

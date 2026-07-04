@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.base;
 
+import android.content.res.Resources;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -166,6 +167,10 @@ public class App extends MultiDexApplication {
 
     public static App getInstance() {
         return instance;
+    }
+
+    public static Resources getRes() {
+        return instance.getResources();
     }
 
     private void putDefault(String key, Object value) {
