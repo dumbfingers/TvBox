@@ -921,7 +921,7 @@ class PlayActivity : BaseActivity() {
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION), Context.RECEIVER_NOT_EXPORTED)
+                registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION), Context.RECEIVER_EXPORTED)
             } else {
                 registerReceiver(pipActionReceiver, IntentFilter(BROADCAST_ACTION))
             }

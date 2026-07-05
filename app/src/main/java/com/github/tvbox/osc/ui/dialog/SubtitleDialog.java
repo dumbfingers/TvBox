@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
+import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.SubtitleHelper;
 
@@ -63,12 +63,12 @@ public class SubtitleDialog extends BaseDialog {
         SubtitleHelper.upTextStyle(subtitleStyleText);
 
         // Set Title Tip
-        subtitleOption.setText(HomeActivity.getRes().getString(R.string.vod_sub_option));
-        selectInternal.setText(HomeActivity.getRes().getString(R.string.vod_sub_int));
-        selectLocal.setText(HomeActivity.getRes().getString(R.string.vod_sub_ext));
-        selectRemote.setText(HomeActivity.getRes().getString(R.string.vod_sub_remote));
-        subtitleSizeText.setText(HomeActivity.getRes().getString(R.string.vod_sub_size));
-        subtitleTimeText.setText(HomeActivity.getRes().getString(R.string.vod_sub_delay));
+        subtitleOption.setText(App.getRes().getString(R.string.vod_sub_option));
+        selectInternal.setText(App.getRes().getString(R.string.vod_sub_int));
+        selectLocal.setText(App.getRes().getString(R.string.vod_sub_ext));
+        selectRemote.setText(App.getRes().getString(R.string.vod_sub_remote));
+        subtitleSizeText.setText(App.getRes().getString(R.string.vod_sub_size));
+        subtitleTimeText.setText(App.getRes().getString(R.string.vod_sub_delay));
 
         // Internal Subtitle from Video File
         selectInternal.setOnClickListener(new View.OnClickListener() {
